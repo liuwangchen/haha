@@ -20,9 +20,9 @@ type EntityConfig struct {
 	Url        string `yaml:"url"`
 
 	// kafka
-	Topic   string `yaml:"topic"`
-	Group   string `yaml:"group"`
-	Version string `yaml:"version"`
+	KafkaTopic   string `yaml:"kafkaTopic"`
+	KafkaGroup   string `yaml:"kafkaGroup"`
+	KafkaVersion string `yaml:"kafkaVersion"`
 
 	// mongo
 }
