@@ -56,10 +56,13 @@ func run(config conf.StreamConfig) error {
 		var (
 			f streams.Flow = flow.NewPassThrough()
 		)
-		for _, flowConfig := range agg.FlowConfigs {
+		for i, flowConfig := range agg.FlowConfigs {
 			f, ok = entity.GetFlow(flowConfig)
 			if !ok {
 				return errors.New("source not found")
+			}
+			if i == 0 {
+				continue
 			}
 			f = f.Via(f)
 		}
