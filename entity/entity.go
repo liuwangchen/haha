@@ -27,7 +27,6 @@ var (
 		"kafka": impl.NewKafkaEntity(),
 	}
 	flows = map[string]IFlow{
-		"":     impl.NewPassFlow(),
 		"pass": impl.NewPassFlow(),
 	}
 )
