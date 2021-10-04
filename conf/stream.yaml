@@ -1,0 +1,11 @@
+entity:
+  - id: 1
+    type: kafka
+    url: game.sanguo.bj:9092
+  - id: 2
+    type: mongo
+    url: mongodb://172.25.128.114:27017
+
+flows:
+  - source: 1
+    sink: 2
