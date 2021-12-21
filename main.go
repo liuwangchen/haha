@@ -1,39 +1,60 @@
 package main
 
 import (
-	"log"
-	"net/http"
-	"net/http/httputil"
-	"net/url"
+	"bytes"
+	"errors"
+	"fmt"
+	"io"
+	"os"
+	"strconv"
+
+	"github.com/urfave/cli"
 )
 
-// NewProxy takes target host and creates a reverse proxy
-func NewProxy(targetHost string) (*httputil.ReverseProxy, error) {
-	url, err := url.Parse(targetHost)
+func main() {
+	app := cli.NewApp()
+	app.EnableBashCompletion = true
+	app.Action = do
+	err := app.Run(os.Args)
 	if err != nil {
-		return nil, err
+		fmt.Println("err", err)
 	}
-
-	proxy := httputil.NewSingleHostReverseProxy(url)
-
-	originalDirector := proxy.Director
-	proxy.Director = func(req *http.Request) {
-		originalDirector(req)
-	}
-
-	return proxy, nil
 }
 
-func main() {
-	// initialize a reverse proxy and pass the actual backend server url here
-	proxy, err := NewProxy("http://172.25.143.197:10000")
+// 解析配置，run
+func do(c *cli.Context) error {
+	var (
+		i1  = 0
+		i2  = 0
+		err error
+	)
+	if len(c.Args()) == 0 {
+		return errors.New("args len != 2")
+	}
+	i1, err = strconv.Atoi(c.Args()[0])
 	if err != nil {
-		panic(err)
+		return err
 	}
 
-	// handle all requests to your server using the proxy
-	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		proxy.ServeHTTP(w, r)
-	})
-	log.Fatal(http.ListenAndServe(":10000", nil))
+	all, err := io.ReadAll(os.Stdin)
+	if err != nil {
+		return err
+	}
+	split := bytes.Split(all, []byte("\n"))
+	i2 = len(split)
+
+	if c.NArg() == 2 {
+		i2, err = strconv.Atoi(c.Args()[1])
+		if err != nil {
+			return err
+		}
+	}
+
+	buf := new(bytes.Buffer)
+	for _, v := range split[i1:i2] {
+		buf.Write(v)
+		buf.Write([]byte("\n"))
+	}
+	fmt.Fprint(c.App.Writer, buf.String())
+	return nil
 }
