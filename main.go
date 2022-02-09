@@ -1,19 +1,25 @@
 package main
 
 import (
-	"bytes"
-	"errors"
 	"fmt"
-	"io"
 	"os"
-	"strconv"
+	"time"
 
+	"github.com/go-redis/redis"
 	"github.com/urfave/cli"
 )
+
+type Config struct {
+	a []int
+}
 
 func main() {
 	app := cli.NewApp()
 	app.EnableBashCompletion = true
+	app.Flags = []cli.Flag{
+		cli.StringFlag{Name: "p", Usage: "端口", Value: ""},
+		cli.StringFlag{Name: "a", Usage: "密码", Value: ""},
+	}
 	app.Action = do
 	err := app.Run(os.Args)
 	if err != nil {
@@ -23,38 +29,34 @@ func main() {
 
 // 解析配置，run
 func do(c *cli.Context) error {
-	var (
-		i1  = 0
-		i2  = 0
-		err error
-	)
-	if len(c.Args()) == 0 {
-		return errors.New("args len != 2")
-	}
-	i1, err = strconv.Atoi(c.Args()[0])
+	port := c.String("p")
+	password := c.String("a")
+	redisClient := redis.NewClient(&redis.Options{
+		Addr:        fmt.Sprintf("127.0.0.1:%s", port),
+		Password:    password,
+		ReadTimeout: time.Second * 100,
+	})
+	_, err := redisClient.Ping().Result()
 	if err != nil {
 		return err
 	}
 
-	all, err := io.ReadAll(os.Stdin)
-	if err != nil {
-		return err
-	}
-	split := bytes.Split(all, []byte("\n"))
-	i2 = len(split)
-
-	if c.NArg() == 2 {
-		i2, err = strconv.Atoi(c.Args()[1])
+	for i := 0; i < 100; i++ {
+		t := 1642971600 - i*86400*7
+		keyP := fmt.Sprintf("cross:gvg:%d*", t)
+		keys, err := redisClient.Keys(keyP).Result()
 		if err != nil {
 			return err
 		}
+		if len(keys) == 0 {
+			continue
+		}
+		count, err := redisClient.Del(keys...).Result()
+		if err != nil {
+			return err
+		}
+		fmt.Println("delete key success", keyP, count)
+		time.Sleep(time.Millisecond * 100)
 	}
-
-	buf := new(bytes.Buffer)
-	for _, v := range split[i1:i2] {
-		buf.Write(v)
-		buf.Write([]byte("\n"))
-	}
-	fmt.Fprint(c.App.Writer, buf.String())
 	return nil
 }
