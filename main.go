@@ -2,61 +2,37 @@ package main
 
 import (
 	"fmt"
-	"os"
-	"time"
-
-	"github.com/go-redis/redis"
-	"github.com/urfave/cli"
 )
 
-type Config struct {
-	a []int
+type Person struct {
+	Name string
 }
+
+type Stu struct {
+	Person
+}
+
+type QueryServerResponse struct {
+	Code          int32  `protobuf:"varint,1,opt,name=code,proto3" json:"code,omitempty"`                  // 错误码
+	ServerId      uint64 `protobuf:"varint,2,opt,name=serverId,proto3" json:"serverId,omitempty"`          //      int    `json:"serverId"`
+	Name          string `protobuf:"bytes,3,opt,name=name,proto3" json:"name,omitempty"`                   //string `json:"serverName"`
+	Ip            string `protobuf:"bytes,4,opt,name=ip,proto3" json:"ip,omitempty"`                       //string `json:"ip"`
+	LaunchTime    string `protobuf:"bytes,5,opt,name=launchTime,proto3" json:"launchTime,omitempty"`       //string `json:"launchTime"`
+	FirstOpenTime string `protobuf:"bytes,6,opt,name=firstOpenTime,proto3" json:"firstOpenTime,omitempty"` //string `json:"firstOpenTime"`
+	Version       string `protobuf:"bytes,7,opt,name=version,proto3" json:"version,omitempty"`             //string `json:"version"`
+	Git           string `protobuf:"bytes,8,opt,name=git,proto3" json:"git,omitempty"`                     //string `json:"commitId"`
+	Online        string `protobuf:"bytes,9,opt,name=online,proto3" json:"online,omitempty"`               //string `json:"online"`
+	Register      string `protobuf:"bytes,10,opt,name=register,proto3" json:"register,omitempty"`          //string `json:"register"`
+	Cluster       string `protobuf:"bytes,11,opt,name=cluster,proto3" json:"cluster,omitempty"`            //string `json:"cluster"`
+	OpGame        string `protobuf:"bytes,12,opt,name=opGame,proto3" json:"opGame,omitempty"`              //string `json:"op_game"`
+	MergeServer   uint64 `protobuf:"varint,13,opt,name=mergeServer,proto3" json:"mergeServer,omitempty"`   //int    `json:"mergeServer"`
+}
+
+type t1 string
+type t2 string
 
 func main() {
-	app := cli.NewApp()
-	app.EnableBashCompletion = true
-	app.Flags = []cli.Flag{
-		cli.StringFlag{Name: "p", Usage: "端口", Value: ""},
-		cli.StringFlag{Name: "a", Usage: "密码", Value: ""},
-	}
-	app.Action = do
-	err := app.Run(os.Args)
-	if err != nil {
-		fmt.Println("err", err)
-	}
+	fmt.Println(123)
 }
 
-// 解析配置，run
-func do(c *cli.Context) error {
-	port := c.String("p")
-	password := c.String("a")
-	redisClient := redis.NewClient(&redis.Options{
-		Addr:        fmt.Sprintf("127.0.0.1:%s", port),
-		Password:    password,
-		ReadTimeout: time.Second * 100,
-	})
-	_, err := redisClient.Ping().Result()
-	if err != nil {
-		return err
-	}
-
-	for i := 0; i < 100; i++ {
-		t := 1642971600 - i*86400*7
-		keyP := fmt.Sprintf("cross:gvg:%d*", t)
-		keys, err := redisClient.Keys(keyP).Result()
-		if err != nil {
-			return err
-		}
-		if len(keys) == 0 {
-			continue
-		}
-		count, err := redisClient.Del(keys...).Result()
-		if err != nil {
-			return err
-		}
-		fmt.Println("delete key success", keyP, count)
-		time.Sleep(time.Millisecond * 100)
-	}
-	return nil
-}
+// quicksort
