@@ -32,7 +32,7 @@ type t1 string
 type t2 string
 
 func main() {
-	fmt.Println(11111333)
+	fmt.Println(11111333666)
 }
 
 // quicksort
