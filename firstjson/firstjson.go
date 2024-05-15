@@ -2,13 +2,12 @@ package main
 
 import (
 	"fmt"
-	"io"
-	"os"
+	"io/ioutil"
 	"strings"
 )
 
 func main() {
-	b, err := io.ReadAll(os.Stdin)
+	b, err := ioutil.ReadFile("/tmp/json")
 	if err != nil {
 		fmt.Println(err)
 		return
@@ -20,6 +19,9 @@ func main() {
 		}
 	}()
 	for _, content := range strings.Split(string(b), "\n") {
+		if len(content) == 0 {
+			continue
+		}
 		start := strings.Index(content, "{")
 		end := strings.LastIndex(content, "}")
 		fmt.Println(content[start : end+1])
