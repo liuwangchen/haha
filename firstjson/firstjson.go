@@ -2,12 +2,13 @@ package main
 
 import (
 	"fmt"
-	"io/ioutil"
+	"io"
+	"os"
 	"strings"
 )
 
 func main() {
-	b, err := ioutil.ReadFile("/tmp/json")
+	b, err := io.ReadAll(os.Stdin)
 	if err != nil {
 		fmt.Println(err)
 		return
